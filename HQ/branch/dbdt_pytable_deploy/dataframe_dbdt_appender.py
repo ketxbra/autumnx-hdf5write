@@ -74,7 +74,6 @@ def main():
         then = datetime.datetime.now()
         print "Starting Data append..."
         for line in data:
-            print line
             mag['time'] = line[0]
             mag['Bx'] = line[1]
             mag['By'] = line[2]

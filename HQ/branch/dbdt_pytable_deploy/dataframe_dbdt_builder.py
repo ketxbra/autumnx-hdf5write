@@ -52,9 +52,6 @@ def main():
         Bx = tables.Float32Col()
         By = tables.Float32Col()
         Bz = tables.Float32Col()
-        '''dx = tables.Float32Col()
-        dy = tables.Float32Col()
-        dz = tables.Float32Col()'''
 
     h5file = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX")
     group = h5file.create_group("/", 'magnetometer', 'Detector information')
