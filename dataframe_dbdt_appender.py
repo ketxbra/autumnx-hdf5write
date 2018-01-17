@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 #####################################################################
-#SCRIPT:  dataframe_dbdt_builder.py
+#SCRIPT:  dataframe_dbdt_appender.py
 #
 #AUTHOR:  Kyle Reiter
 #         University of Calgary
 #         Department of Physics and Astronomy
 #
-#DATE:    Jan 11, 2017
+#DATE:    Jan 17, 2017
 #
-#PURPOSE: Processes B field AUTUMNX data sequentially over specified
-#         data range and writes to pytable.
+#PURPOSE: Processes B field AUTUMNX data for yesterday's data. Should
+#         be run daily as a cron job.
 #####################################################################
 
-import numpy as np
-import pandas as pd
-import HQ, re, urllib2, datetime, optparse, tables
+import re, urllib2, datetime, tables
 
+#Grabs file from specified url over http
 
 def urlwrite(url,filename):
     try:
@@ -23,15 +22,20 @@ def urlwrite(url,filename):
     except:
         return
 
+#main function
 def main():
+    #reads from hdf5 file (must already exist)
     h5file = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX")
     stationlist = ['SALU','AKUL','PUVR','INUK','KJPK','RADI','VLDR','STFL','SEPT','SCHF']
     table = {}
+    #get yesterday's date
     date =  datetime.datetime.utcnow()-datetime.timedelta(days=1)
     strd = date.strftime('%Y_%m_%d')
     year, month, day = re.split('_', strd)
 
+    #main loop
     for station in stationlist:
+        #should probably clean this up, this is pretty bad right now
         if station == 'SALU':
             table[station] = h5file.root.magnetometer.SALU
         elif station == 'AKUL':
@@ -53,6 +57,7 @@ def main():
         elif station == 'SCHF':
             table[station] = h5file.root.magnetometer.SCHF
         print station
+        #read data from http
         url = 'http://autumn.athabascau.ca/magdata/L1/{0}/fluxgate/{1}/{2}/{3}/AUTUMNX_{0}_TGBO_{4}_PT0,5S.txt'.format(station, year, month, day, strd)
         try:
             response = urllib2.urlopen(url)
@@ -61,6 +66,7 @@ def main():
         cd = re.split('\n',response.read())
         del cd[0:13]
         data = []
+        #parse datetime object into seconds from epoch
         for line in cd:
             ld = re.split('\s+',line)
             try:
@@ -70,6 +76,7 @@ def main():
                 data.append(ld)
             except:
                 continue
+        #append data to table in hdf5 file
         mag = table[station].row
         then = datetime.datetime.now()
         print "Starting Data append..."
@@ -79,8 +86,10 @@ def main():
             mag['By'] = line[2]
             mag['Bz'] = line[3]
             mag.append()
+        #flush table buffer
         table[station].flush()
         print "{0} s to complete".format(datetime.datetime.now()-then)
+    #close file
     h5file.close()
 
 if __name__ == '__main__':
