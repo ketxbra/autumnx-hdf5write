@@ -59,8 +59,7 @@ def main():
     h5file = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX")
     group = h5file.create_group("/", 'magnetometer', 'Detector information')
 
-    #stationlist = ['SALU','AKUL','PUVR','INUK','KJPK','RADI','VLDR','STFL','SEPT','SCHF']
-    stationlist = ['SALU']
+    stationlist = ['SALU','AKUL','PUVR','INUK','KJPK','RADI','VLDR','STFL','SEPT','SCHF']
     table = {}
 
     for station in stationlist:
@@ -94,7 +93,6 @@ def main():
             then = datetime.datetime.now()
             print "Starting Data append..."
             for line in data:
-                print line
                 mag['time'] = line[0]
                 mag['Bx'] = line[1]
                 mag['By'] = line[2]
