@@ -56,7 +56,7 @@ def main():
         dy = tables.Float32Col()
         dz = tables.Float32Col()'''
 
-    h5file = tables.open_file("/home/reiter/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX")
+    h5file = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX")
     group = h5file.create_group("/", 'magnetometer', 'Detector information')
 
     #stationlist = ['SALU','AKUL','PUVR','INUK','KJPK','RADI','VLDR','STFL','SEPT','SCHF']
