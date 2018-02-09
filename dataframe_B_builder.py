@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #####################################################################
-#SCRIPT:  dataframe_dbdt_builder.py
+#SCRIPT:  dataframe_B_builder.py
 #
 #AUTHOR:  Kyle Reiter
 #         University of Calgary
@@ -59,7 +59,7 @@ def main():
 
     #initialize hdf5 file data is to be stored to, and group within that file (file should not already exist)
     h5file = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX")
-    group = h5file.create_group("/", 'magnetometer', 'Detector information')
+    group = h5file.create_group("/", 'magnetometer', 'Magnetometer data.')
 
     stationlist = ['SALU','AKUL','PUVR','INUK','KJPK','RADI','VLDR','STFL','SEPT','SCHF']
     table = {}
