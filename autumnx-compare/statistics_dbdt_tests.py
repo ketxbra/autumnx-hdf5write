@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import numpy as np
 import pandas as pd
 import tables, math, csv
@@ -41,7 +42,12 @@ for station in stationlist:
     print 'starting'
     now = dt.datetime.now()
     Bx = table[station].cols.Bx
-    print Bx[0:10]
+    By = table[station].cols.By
+    Bz = table[station].cols.Bz
+    dx = np.log(np.gradient(Bx) / 0.5)
+    dy = np.log(np.gradient(By) / 0.5)
+    dz = np.log(np.gradient(Bz) / 0.5)
+    d = np.sqrt(dx**2+dy**2+dz**2)
     print 'total time to read',dt.datetime.now() - now
     try:
         '''Bx = [ x['Bx'] for x in table[station]]
@@ -57,8 +63,7 @@ for station in stationlist:
     except:
         continue
 
-'''dbdtm = np.array(dB['SALU'])
-plt.hist(dbdtm)
-plt.show()'''
+plt.hist(d)
+plt.show()
 
 bfile.close()
