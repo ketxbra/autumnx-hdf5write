@@ -38,8 +38,11 @@ for station in stationlist:
         table[station] = bfile.root.magnetometer.SCHF
 
     #print list, len(limit)
-    Bx = table[station].cols.['Bx']
+    print 'starting'
+    now = dt.datetime.now()
+    Bx = table[station].cols.Bx
     print Bx[0:10]
+    print 'total time to read',dt.datetime.now() - now
     try:
         '''Bx = [ x['Bx'] for x in table[station]]
         By = [ x['By'] for x in table[station]]
