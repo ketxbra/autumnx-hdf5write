@@ -51,6 +51,9 @@ for station in stationlist:
         ind = np.argmax(d)
         tmax = dt.datetime.utcfromtimestamp(t[ind]).strftime('%Y-%m-%d %H:%M:%S.%f')
         dB[station].append([tmax,str(maxdB)])
+        if station == 'INUK':
+            d = np.column_stack((t,dz))
+            np.save('/home/reiter/Data/Mag/BzINUK.npy',d)
     except:
         continue
 

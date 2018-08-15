@@ -44,9 +44,10 @@ for station in stationlist:
     Bx = table[station].cols.Bx
     By = table[station].cols.By
     Bz = table[station].cols.Bz
-    dx = np.log(np.gradient(Bx) / 0.5)
-    dy = np.log(np.gradient(By) / 0.5)
-    dz = np.log(np.gradient(Bz) / 0.5)
+    t = table[station].cols.time
+    dx = np.log(np.gradient(Bx[0:10000]) / 0.5)
+    dy = np.log(np.gradient(By[0:10000]) / 0.5)
+    dz = np.log(np.gradient(Bz[0:10000]) / 0.5)
     d = np.sqrt(dx**2+dy**2+dz**2)
     print 'total time to read',dt.datetime.now() - now
     try:

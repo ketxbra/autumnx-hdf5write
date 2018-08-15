@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #####################################################################
-#SCRIPT:  dataframe_dbdt_appender.py
+#SCRIPT:  dataframe_B_appender.py
 #
 #AUTHOR:  Kyle Reiter
 #         University of Calgary
@@ -12,29 +12,34 @@
 #         be run daily as a cron job.
 #####################################################################
 
-import re, urllib2, datetime, tables
+import re, datetime, tables, numpy as np
 
-#Grabs file from specified url over http
-
-def urlwrite(url,filename):
-    try:
-        response = urllib2.urlopen(url)
-    except:
-        return
+def diff(t,x):
+    dxdt = np.gradient(x)/np.gradient(t)
+    return dxdt
 
 #main function
 def main():
     #reads from hdf5 file (must already exist)
-    h5file = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX")
+    h5file = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-Mag.h5", mode="a", title="Mag Data for AUTUMNX. 2 Hz Cadence data.")
     stationlist = ['SALU','AKUL','PUVR','INUK','KJPK','RADI','VLDR','STFL','SEPT','SCHF']
     table = {}
-    #get yesterday's date
-    date =  datetime.datetime.utcnow()-datetime.timedelta(days=1)
-    strd = date.strftime('%Y_%m_%d')
-    year, month, day = re.split('_', strd)
+    dB = {}
+
+    #initialize dBdt data storage class
+    class dBdt(tables.IsDescription):
+        time = tables.Float64Col()
+        dBx = tables.Float32Col()
+        dBy = tables.Float32Col()
+        dBz = tables.Float32Col()
+
+    #initialize hdf5 file data is to be stored to, and group within that file (file should not already exist)
+    dBfile = tables.open_file("/home/reiter/Data/Mag/AUTUMNX-dBdt.h5", mode="a", title="dBdt Data for AUTUMNX. 2Hz Cadence.")
+    group = dBfile.create_group("/", 'dBdt', 'dBdt data for AUTUMNX. 2Hz Cadence.')
 
     #main loop
     for station in stationlist:
+        dB[station] = h5file.create_table(group, station, dBdt, "{0} DBdt Data".format(station))
         #should probably clean this up, this is pretty bad right now
         if station == 'SALU':
             table[station] = h5file.root.magnetometer.SALU
@@ -57,38 +62,26 @@ def main():
         elif station == 'SCHF':
             table[station] = h5file.root.magnetometer.SCHF
         print station
-        #read data from http
-        url = 'http://autumn.athabascau.ca/magdata/L1/{0}/fluxgate/{1}/{2}/{3}/AUTUMNX_{0}_TGBO_{4}_PT0,5S.txt'.format(station, year, month, day, strd)
+
         try:
-            response = urllib2.urlopen(url)
+            table[station].cols.time.create_csindex()
         except:
-            continue
-        cd = re.split('\n',response.read())
-        del cd[0:13]
-        data = []
-        #parse datetime object into seconds from epoch
-        for line in cd:
-            ld = re.split('\s+',line)
-            try:
-                datet = ld[0]+' '+ld[1]+'000'
-                datet = (datetime.datetime.strptime(datet,'%Y-%m-%d %H:%M:%S.%f')-datetime.datetime.utcfromtimestamp(0)).total_seconds()
-                ld = [datet,float(ld[3]),float(ld[4]),float(ld[5])]
-                data.append(ld)
-            except:
-                continue
+            table[station].cols.time.reindex()
+
+        max_i = table.colindexes['time'][-1]
+        i = 0
+        while (i+1)*2**20 <= max_i:
+            t = np.array([table.cols.time[table.colindexes['time'][v]] for v in range(i*2**20,(i+1)*2**20)])[:len(t)-1]
+            x = np.array([table.cols.time[table.colindexes['time'][v]] for v in range(i*2**20,(i+1)*2**20)])[:len(x)-1]
+            y = np.array([table.cols.time[table.colindexes['time'][v]] for v in range(i * 2 ** 20, (i + 1) * 2 ** 20)])[:len(y)-1]
+            z = np.array([table.cols.time[table.colindexes['time'][v]] for v in range(i * 2 ** 20, (i + 1) * 2 ** 20)])[:len(z)-1]
+            dx = diff(t,x)
+            dy = diff(t,y)
+            dz = diff(t,z)
+
         #append data to table in hdf5 file
         mag = table[station].row
-        then = datetime.datetime.now()
-        print "Starting Data append..."
-        for line in data:
-            mag['time'] = line[0]
-            mag['Bx'] = line[1]
-            mag['By'] = line[2]
-            mag['Bz'] = line[3]
-            mag.append()
-        #flush table buffer
-        table[station].flush()
-        print "{0} s to complete".format(datetime.datetime.now()-then)
+
     #close file
     h5file.close()
 
