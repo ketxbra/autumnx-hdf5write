@@ -11,8 +11,8 @@ dir = '/Users/Kyle/Data/compare/'
 stationlist = ['SALU','AKUL','PUVR','INUK','KJPK','RADI','VLDR','STFL','SEPT','SCHF']
 hqlist = ['Nicolet', 'Outaouais', 'Tilly', 'LG2', 'Rimouski', 'Chateauguay', 'Chibougamau', 'Boucherville', 'Micoua']
 
-nx = 'Tilly'
-ny = 'Nicolet'
+ny = 'Tilly'
+nx = 'RADI'
 
 if nx in stationlist:
     nsx = 1
@@ -75,11 +75,11 @@ if nsy == 1:
     plt.ylabel('{0} (nT/s)'.format(ny))
 else:
     plt.ylabel('{0} %HD'.format(ny))
-plt.title('r = {0} p = {1} N = {2}'.format(round(r[0],3),r[1],len(pairs[:,0])))
+plt.title('r = {0} p = {1} N = {2}'.format(round(r[0],3),'{:.2e}'.format(r[1]),len(pairs[:,0])))
 plt.ylim(0,max(pairs[:,1]))
 plt.xlim(0,max(pairs[:,0]))
 
-plt.savefig('/Users/Kyle/Data/compare/{0}-{1}.png'.format(nx,ny),dpi=200)
+plt.savefig('/Users/Kyle/Data/compare/{0}-{1}.ps'.format(nx,ny),dpi=400)
 
 
 #print dbdt[0][0]-thd[0][0]
